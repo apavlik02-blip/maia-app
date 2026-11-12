@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Maia">
+<meta name="theme-color" content="#12100e">
+<title>Maia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,500;0,6..12,600;1,6..12,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #12100e;
+    --surface: rgba(232, 213, 163, 0.04);
+    --surface-strong: rgba(232, 213, 163, 0.08);
+    --border: rgba(232, 213, 163, 0.15);
+    --text: #f5f0e8;
+    --text-muted: #b8a992;
+    --accent: #e8d5a3;
+    --accent-soft: rgba(232, 213, 163, 0.12);
+    --glow: rgba(232, 213, 163, 0.25);
+    --gold: #e8d5a3;
+    --cream: #f5f0e8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Nunito Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image: 
+      radial-gradient(ellipse at 15% 0%, rgba(232,213,163,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 100%, rgba(245,240,232,0.03) 0%, transparent 45%);
+  }
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 14px calc(110px + env(safe-area-inset-bottom));
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 24px var(--glow);
+  }
+  .header-text { flex: 1; }
+  .header-text h1 {
+    font-family: "Libre Baskerville", Georgia, serif;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.2px;
+  }
+  .header-text .sub { font-size: 12.5px; color: var(--text-muted); margin-top: 1px; }
+  .mode-pill, .walk-btn {
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .nav {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+  }
+  .nav-btn {
+    flex: 1;
+    padding: 8px 4px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .nav-btn.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+  .view { display: none; flex: 1; flex-direction: column; }
+  .view.active { display: flex; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(16px);
+  }
+  .card h2 {
+    font-family: "Libre Baskerville", Georgia, serif;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-weight: 400;
+  }
+  .brief-item, .memory-item { font-size: 14.5px; line-height: 1.5; margin-bottom: 7px; }
+  .brief-item strong, .memory-item strong { color: #fff; font-weight: 500; }
+  .chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 8px;
+    overflow-y: auto;
+    max-height: calc(100vh - 280px);
+  }
+  .message {
+    max-width: 86%;
+    padding: 11px 15px;
+    border-radius: 18px;
+    font-size: 14.5px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
+  .message.maia {
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
+  }
+  .message.user {
+    background: var(--accent-soft);
+    border: 1px solid rgba(212,196,255,0.22);
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 13px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    cursor: pointer;
+  }
+  .chip:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .mood-grid img { width: 100%; height: 90px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border); }
+  .draft-box {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 8px;
+    color: #e8e8f0;
+    min-height: 80px;
+  }
+  .variation { font-size: 13.5px; margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+  .input-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 14px calc(22px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--bg) 65%, transparent);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .input-wrap {
+    display: flex;
+    gap: 8px;
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
+    border-radius: 26px;
+    padding: 5px 5px 5px 16px;
+    backdrop-filter: blur(20px);
+  }
+  input { flex: 1; background: transparent; border: none; color: var(--text); font-size: 15px; outline: none; }
+  input::placeholder { color: var(--text-muted); }
+  button.send {
+    width: 42px; height: 42px; border-radius: 50%; border: none;
+    background: var(--accent); color: #1a1612; font-weight: 600; font-size: 18px; cursor: pointer;
+  }
+  .status { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 6px; }
+  .settings-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14.5px;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  select { background: var(--surface-strong); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 8px; font-size: 13px; }
+  .walk-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 100;
+  }
+  .walk-card {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 24px; max-width: 340px; text-align: center;
+  }
+  .walk-card h3 { margin-bottom: 10px; color: var(--accent); }
+  .walk-card p { font-size: 14.5px; line-height: 1.5; margin-bottom: 16px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23e8d5a3' fill-opacity='0.15' stroke='%23e8d5a3' stroke-width='1'/%3E%3Ctext x='50' y='62' text-anchor='middle' font-family='Libre Baskerville, Georgia, serif' font-size='42' fill='%23e8d5a3'%3EM%3C/text%3E%3C/svg%3E" alt="Maia" class="avatar" id="avatar">
+    <div class="header-text">
+      <h1>Maia</h1>
+      <div class="sub" id="modeLabel">Hybrid · remembers your taste</div>
+    </div>
+    <div class="mode-pill" onclick="cycleMode()">Hybrid</div>
+    <div class="walk-btn" onclick="startWalkthrough()">Tour</div>
+  </header>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="switchView('today', this)">Today</button>
+    <button class="nav-btn" onclick="switchView('chat', this)">Chat</button>
+    <button class="nav-btn" onclick="switchView('projects', this)">Projects</button>
+    <button class="nav-btn" onclick="switchView('settings', this)">Settings</button>
+  </div>
+
+  <div class="view active" id="view-today">
+    <div class="card">
+      <h2>Today</h2>
+      <div class="brief-item"><strong>Focus:</strong> <span id="focusText">Brand story — evening campaign</span></div>
+      <div class="brief-item"><strong>Calendar:</strong> 2 meetings · Deep work block at 10:00</div>
+      <div class="brief-item"><strong>Open:</strong> Mood board ready · Draft waiting for revision</div>
+    </div>
+    <div class="card">
+      <h2>Quick Start</h2>
+      <div class="chips">
+        <div class="chip" onclick="quickAction('Open the brand story draft')">Open draft</div>
+        <div class="chip" onclick="quickAction('Show mood board')">Mood board</div>
+        <div class="chip" onclick="quickAction('Give me a fresh angle')">Fresh angle</div>
+        <div class="chip" onclick="quickAction('Generate three variations')">Variations</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-chat">
+    <div class="chat" id="chat"></div>
+  </div>
+
+  <div class="view" id="view-projects">
+    <div class="card">
+      <h2>Brand Story — Evening Campaign</h2>
+      <div class="draft-box" id="draftText" contenteditable="true" onblur="saveDraft()">The evening light doesn’t ask for attention. It simply arrives — warm against stone, soft across linen, holding the day just a little longer than it needs to.</div>
+      <div class="chips" style="margin-top:12px">
+        <div class="chip" onclick="reviseDraft('tighter')">Tighter</div>
+        <div class="chip" onclick="reviseDraft('warmer')">Warmer</div>
+        <div class="chip" onclick="reviseDraft('cinematic')">Cinematic</div>
+        <div class="chip" onclick="reviseDraft('quieter')">Quieter</div>
+        <div class="chip" onclick="generateVariations()">3 Variations</div>
+        <div class="chip" onclick="showVersions()">Versions</div>
+        <div class="chip" onclick="addNote()">Add note</div>
+      </div>
+      <div id="variations"></div>
+    </div>
+    <div class="card">
+      <h2>Mood Board</h2>
+      <div class="mood-grid">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2312100e'/%3E%3Cstop offset='50%25' stop-color='%233a3428'/%3E%3Cstop offset='100%25' stop-color='%23e8d5a3' stop-opacity='0.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='200' fill='url(%23g)'/%3E%3Ctext x='20' y='110' font-family='Libre Baskerville, Georgia, serif' font-size='18' fill='%23e8d5a3' opacity='0.7'%3EEvening light%3C/text%3E%3C/svg%3E" alt="Mood">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2312100e'/%3E%3Cstop offset='50%25' stop-color='%233a3428'/%3E%3Cstop offset='100%25' stop-color='%23e8d5a3' stop-opacity='0.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='200' fill='url(%23g)'/%3E%3Ctext x='20' y='110' font-family='Libre Baskerville, Georgia, serif' font-size='18' fill='%23e8d5a3' opacity='0.7'%3EEvening light%3C/text%3E%3C/svg%3E" alt="Mood" style="object-position: 30% 40%">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2312100e'/%3E%3Cstop offset='50%25' stop-color='%233a3428'/%3E%3Cstop offset='100%25' stop-color='%23e8d5a3' stop-opacity='0.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='200' fill='url(%23g)'/%3E%3Ctext x='20' y='110' font-family='Libre Baskerville, Georgia, serif' font-size='18' fill='%23e8d5a3' opacity='0.7'%3EEvening light%3C/text%3E%3C/svg%3E" alt="Mood" style="object-position: 70% 60%">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2312100e'/%3E%3Cstop offset='50%25' stop-color='%233a3428'/%3E%3Cstop offset='100%25' stop-color='%23e8d5a3' stop-opacity='0.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='200' fill='url(%23g)'/%3E%3Ctext x='20' y='110' font-family='Libre Baskerville, Georgia, serif' font-size='18' fill='%23e8d5a3' opacity='0.7'%3EEvening light%3C/text%3E%3C/svg%3E" alt="Mood" style="object-position: 20% 80%">
+      </div>
+      <div class="chips">
+        <div class="chip" onclick="quickAction('Suggest more references like these')">Suggest more</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-settings">
+    <div class="card">
+      <h2>Preferences</h2>
+      <div class="settings-row">
+        <span>Mode</span>
+        <select id="modeSelect" onchange="setMode(this.value)">
+          <option value="hybrid">Hybrid</option>
+          <option value="assistant">Assistant</option>
+          <option value="creative">Creative Partner</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <span>Tone</span>
+        <select id="toneSelect" onchange="updateMemory('tone', this.value)">
+          <option value="precise">Precise</option>
+          <option value="warm">Warm</option>
+          <option value="opinionated">Opinionated</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Memory</h2>
+      <div class="memory-item"><strong>Atmosphere:</strong> <span id="memAtmosphere" contenteditable="true" onblur="updateMemory('atmosphere', this.textContent)">Quiet luxury, Mediterranean evening light</span></div>
+      <div class="memory-item"><strong>Dislikes:</strong> Overly cute language, corporate jargon</div>
+      <div class="memory-item"><strong>Working style:</strong> Iterative, visual-first</div>
+      <div class="memory-item"><strong>Notes:</strong> <span id="memNotes">None yet</span></div>
+      <div class="memory-item"><strong>Versions saved:</strong> <span id="versionCount">0</span></div>
+      <div class="chips">
+        <div class="chip" onclick="clearMemory()">Reset all memory</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="input-bar">
+  <div class="input-wrap">
+    <input type="text" id="input" placeholder="Ask Maia anything…" onkeydown="if(event.key==='Enter')send()">
+    <button class="send" onclick="send()">↑</button>
+  </div>
+  <div class="status" id="statusText">Hybrid mode · memory persists across sessions</div>
+</div>
+
+<div class="walk-overlay" id="walkOverlay">
+  <div class="walk-card">
+    <h3 id="walkTitle">Welcome to Maia</h3>
+    <p id="walkText">Your personal assistant and creative partner. Let’s take a quick tour.</p>
+    <button class="chip" onclick="nextWalk()" style="background:var(--accent);color:#1a1612;border:none;padding:10px 20px;">Next</button>
+  </div>
+</div>
+
+<script>
+let currentMode = 'hybrid';
+let currentView = 'today';
+let walkStep = 0;
+let memory = JSON.parse(localStorage.getItem('maiaMemory') || '{"project":"Evening Campaign","tone":"precise","atmosphere":"Quiet luxury, Mediterranean evening light","notes":[],"draft":"The evening light doesn’t ask for attention. It simply arrives — warm against stone, soft across linen, holding the day just a little longer than it needs to.","versions":[],"lastAction":""}');
+
+const modes = ['hybrid', 'assistant', 'creative'];
+const modeLabels = {
+  hybrid: 'Hybrid · remembers your taste',
+  assistant: 'Assistant · clear & practical',
+  creative: 'Creative Partner · has opinions'
+};
+
+const walkSteps = [
+  { title: "Today view", text: "Your daily brief and quick starts live here. Maia surfaces what matters without you asking.", view: "today" },
+  { title: "Chat", text: "Talk naturally. She adapts to your mode — practical when you need execution, opinionated when you want creative push.", view: "chat" },
+  { title: "Projects", text: "This is the creative workspace. Edit the draft directly, generate variations, refine style, and keep mood references in one place.", view: "projects" },
+  { title: "Memory & Settings", text: "She remembers your preferred atmosphere, tone, and notes. Everything persists. Switch modes anytime.", view: "settings" },
+  { title: "You’re ready", text: "Try revising the draft or asking for a fresh angle. Maia is here to move work forward.", view: "today" }
+];
+
+function saveMemory() {
+  localStorage.setItem('maiaMemory', JSON.stringify(memory));
+  document.getElementById('memAtmosphere').textContent = memory.atmosphere;
+  document.getElementById('memNotes').textContent = memory.notes.length ? memory.notes.join(' · ') : 'None yet';
+  document.getElementById('draftText').textContent = memory.draft;
+  document.getElementById('versionCount').textContent = memory.versions.length;
+  updateBrief();
+}
+
+function updateMemory(key, value) {
+  memory[key] = value;
+  saveMemory();
+}
+
+function switchView(view, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  if (btn) btn.classList.add('active');
+  else document.querySelectorAll('.nav-btn')[['today','chat','projects','settings'].indexOf(view)].classList.add('active');
+  currentView = view;
+  if (view === 'chat' && document.getElementById('chat').children.length === 0) {
+    addMessage("I’m here. What do you want to work on?", 'maia');
+  }
+}
+
+function cycleMode() {
+  const idx = modes.indexOf(currentMode);
+  currentMode = modes[(idx + 1) % modes.length];
+  updateModeUI();
+}
+
+function setMode(m) {
+  currentMode = m;
+  updateModeUI();
+}
+
+function updateModeUI() {
+  document.querySelector('.mode-pill').textContent = currentMode.charAt(0).toUpperCase() + currentMode.slice(1);
+  document.getElementById('modeLabel').textContent = modeLabels[currentMode];
+  document.getElementById('statusText').textContent = modeLabels[currentMode] + ' · memory persists';
+  document.getElementById('modeSelect').value = currentMode;
+}
+
+function addMessage(text, who) {
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = 'message ' + who;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  if (currentView !== 'chat') switchView('chat');
+}
+
+function updateBrief() {
+  const focus = document.getElementById('focusText');
+  const open = document.querySelector('#view-today .brief-item:nth-child(3)');
+  if (focus) focus.textContent = memory.project + (memory.lastAction ? ' — ' + memory.lastAction : '');
+  if (open) open.innerHTML = '<strong>Open:</strong> ' + (memory.versions.length ? memory.versions.length + ' versions saved · ' : '') + 'Draft ready for revision';
+}
+
+function generateReply(userText) {
+  const t = userText.toLowerCase();
+  const projectContext = `Working on "${memory.project}". Current draft starts: "${memory.draft.slice(0, 80)}..."`;
+  
+  if (t.includes('draft') || t.includes('open') || t.includes('show')) 
+    return `${projectContext}\n\nFull draft:\n\n${memory.draft}\n\nEdit directly in Projects or tell me how to revise it.`;
+  if (t.includes('mood') || t.includes('board') || t.includes('reference')) 
+    return `Mood board is in Projects. It aligns with your preferred atmosphere: ${memory.atmosphere}.`;
+  if (t.includes('angle') || t.includes('fresh') || t.includes('idea')) {
+    const idea = currentMode === 'creative' 
+      ? "I prefer starting from the silence after the day ends. It keeps the quiet luxury but opens a stronger emotional door."
+      : "Alternative angle: open from the quiet after the workday. Same atmosphere, different emotional entry.";
+    return idea + "\n\nWant me to rewrite the opening that way?";
+  }
+  if (t.includes('variation') || t.includes('three')) {
+    generateVariations();
+    return "Generated three variations in Projects. They stay close to your preferred tone.";
+  }
+  if (t.includes('suggest more') || t.includes('references')) 
+    return `More in the same vein as your atmosphere (${memory.atmosphere}): weathered stone at dusk, soft lantern light on linen, deep blue shadows. Should I add notes about these?`;
+  if (t.includes('remember')) {
+    const note = userText.replace(/remember/i, '').trim();
+    if (note) { memory.notes.push(note); saveMemory(); return "Saved to memory."; }
+  }
+  
+  if (currentMode === 'assistant') return `Understood. ${projectContext} What should I handle next?`;
+  if (currentMode === 'creative') return `Looking at the current draft, I have a direction. Want me to push it or try a new angle?`;
+  return `Listening. ${projectContext} Tell me what you want to move forward.`;
+}
+
+function quickAction(text) {
+  addMessage(text, 'user');
+  setTimeout(() => addMessage(generateReply(text), 'maia'), 450);
+}
+
+function send() {
+  const input = document.getElementById('input');
+  const text = input.value.trim();
+  if (!text) return;
+  addMessage(text, 'user');
+  input.value = '';
+  setTimeout(() => addMessage(generateReply(text), 'maia'), 550);
+}
+
+function reviseDraft(style) {
+  const old = memory.draft;
+  let d = old;
+  if (style === 'tighter') d = "The evening light doesn’t ask for attention. It arrives — warm against stone, soft across linen — and holds the day a little longer.";
+  if (style === 'warmer') d = "The evening light settles gently. Warm against the stone, soft across the linen, it holds the day just a little longer than necessary.";
+  if (style === 'cinematic') d = "Light finds the stone first. Then the linen. The evening holds everything a moment longer, as if it knows the day is not quite finished.";
+  if (style === 'quieter') d = "The light arrives without noise. Stone takes it, linen softens it. The day stays a little longer.";
+  memory.versions.push({style, text: old, time: new Date().toLocaleTimeString()});
+  memory.draft = d;
+  memory.lastAction = 'revised ' + style;
+  saveMemory();
+  addMessage(`Revised to be more ${style}. Previous version saved.`, 'maia');
+}
+
+function showVersions() {
+  if (!memory.versions.length) {
+    addMessage("No previous versions yet. Revise the draft to save one.", 'maia');
+    return;
+  }
+  const list = memory.versions.slice(-5).map((v, i) => `${v.style} (${v.time}): ${v.text.slice(0, 60)}...`).join('\n');
+  addMessage("Recent versions:\n\n" + list, 'maia');
+}
+
+function forgetNote(index) {
+  memory.notes.splice(index, 1);
+  saveMemory();
+}
+
+function generateVariations() {
+  const vars = [
+    "The light arrives without announcement. Stone takes it first, then linen. The day lingers.",
+    "Evening settles in layers — warm on stone, soft on linen — and refuses to leave quickly.",
+    "It doesn’t perform. The light simply stays, holding the stone and the linen a little longer than the day requires."
+  ];
+  const container = document.getElementById('variations');
+  container.innerHTML = vars.map((v,i) => `<div class="variation"><strong>Variation ${i+1}:</strong> ${v} <span class="chip" style="margin-left:8px" onclick="useVariation(${i})">Use this</span></div>`).join('');
+  memory.variations = vars;
+  saveMemory();
+}
+
+function useVariation(i) {
+  memory.draft = memory.variations[i];
+  saveMemory();
+  addMessage("Updated the main draft with that variation.", 'maia');
+}
+
+function addNote() {
+  const note = prompt("Add a note to memory:");
+  if (note) {
+    memory.notes.push(note);
+    saveMemory();
+    addMessage("Saved to memory.", 'maia');
+  }
+}
+
+function saveDraft() {
+  memory.draft = document.getElementById('draftText').textContent;
+  saveMemory();
+}
+
+function clearMemory() {
+  if (confirm("Reset all memory?")) {
+    localStorage.removeItem('maiaMemory');
+    location.reload();
+  }
+}
+
+function startWalkthrough() {
+  walkStep = 0;
+  document.getElementById('walkOverlay').style.display = 'flex';
+  showWalk();
+}
+
+function showWalk() {
+  const step = walkSteps[walkStep];
+  document.getElementById('walkTitle').textContent = step.title;
+  document.getElementById('walkText').textContent = step.text;
+  switchView(step.view);
+}
+
+function nextWalk() {
+  walkStep++;
+  if (walkStep >= walkSteps.length) {
+    document.getElementById('walkOverlay').style.display = 'none';
+    return;
+  }
+  showWalk();
+}
+
+// Init
+saveMemory();
+updateModeUI();
+updateBrief();
+</script>
+</body>
+</html>
